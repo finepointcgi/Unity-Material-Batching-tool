@@ -12,7 +12,7 @@ public class CreateMaterialsForTextures : EditorWindow
     private string NormalExtension;
     private string AlbedoExtension;
     private string MetallicExtension;
-    private string CustomMaterialLocation;
+    private string CustomMaterialLocation = "Assets/";
    
     private bool CustomMaterialLocationBool;
     private bool CustomTextureOptions;
@@ -23,7 +23,7 @@ public class CreateMaterialsForTextures : EditorWindow
             " then click start.";
 
     private string[] TextureSize = new string[] { "32", "64", "128", "256", "512", "1024", "2048", "4096", "8192" };
-    private string[] ShaderName = new string[] { "Standard" };
+    private string[] ShaderName = new string[] { "Standard"};
 
     private int TileX;
     private int TileY;
@@ -56,7 +56,6 @@ public class CreateMaterialsForTextures : EditorWindow
                 NormalExtension = EditorGUILayout.TextField("Extension of Normal map", NormalExtension);
                 MetallicExtension = EditorGUILayout.TextField("Extension of Metallic map", MetallicExtension);
                 break;
-
         }
         
 
@@ -79,7 +78,10 @@ public class CreateMaterialsForTextures : EditorWindow
         {
             CurrentTextureSizeIndex = EditorGUILayout.Popup(CurrentTextureSizeIndex, TextureSize);
             CrunchCompress = EditorGUILayout.Toggle("Crunch Texture Maps", CrunchCompress);
-
+            if (CrunchCompress)
+            {
+                CrunchCompressionAmount = EditorGUILayout.IntSlider("Compressor Quality", CrunchCompressionAmount, 5, 100);
+            }
             EditorGUILayout.BeginHorizontal("box");
 
             TileX = EditorGUILayout.IntField("X Tile", TileX);
@@ -87,10 +89,7 @@ public class CreateMaterialsForTextures : EditorWindow
             //GUILayout.Button("I'm to the right");
 
             EditorGUILayout.EndHorizontal();
-            if (CrunchCompress)
-            {
-                CrunchCompressionAmount = EditorGUILayout.IntSlider("Compressor Quality",CrunchCompressionAmount, 5, 100);
-            }
+            
 
         }
         EditorGUILayout.Space();
@@ -121,8 +120,10 @@ public class CreateMaterialsForTextures : EditorWindow
             var textures = Selection.GetFiltered(typeof(Texture), SelectionMode.Assets).Cast<Texture>();
             foreach (var tex in textures)
             {
-
+                
                 string Path = AssetDatabase.GetAssetPath(tex);
+                
+                
                 if (!Path.Contains("_"))
                 {
                     continue;
@@ -130,7 +131,7 @@ public class CreateMaterialsForTextures : EditorWindow
 
 
                 TextureImporter importer = (TextureImporter) TextureImporter.GetAtPath(Path);
-                Debug.Log(Path);
+                //Debug.Log(Path);
                 List<string> SplitResult = Path.Split('_').ToList();
                 
                 List<string> SplitResultFileType = SplitResult[SplitResult.Count - 1].Split('.').ToList();
@@ -140,8 +141,15 @@ public class CreateMaterialsForTextures : EditorWindow
                 
 
                 string CombinedResultMinusExtension = string.Join("", SplitResultWithoutExtension);
-                Debug.Log(CombinedResultMinusExtension);
+                //Debug.Log(CombinedResultMinusExtension);
+                 
                 string currentPath = CombinedResultMinusExtension + ".mat";
+                if (CustomMaterialLocationBool)
+                {
+                    List<string> TempSplit = currentPath.Split('/').ToList();
+
+                    currentPath =  CustomMaterialLocation + TempSplit[TempSplit.Count - 1];
+                }
                 Debug.Log(currentPath);
 
                 
@@ -192,7 +200,6 @@ public class CreateMaterialsForTextures : EditorWindow
                         }
                         break;
 
-                   
                 }
 
                 
